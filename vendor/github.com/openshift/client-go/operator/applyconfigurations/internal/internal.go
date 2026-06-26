@@ -2271,9 +2271,6 @@ var schemaYAML = typed.YAMLObject(`types:
     - name: clientTimeout
       type:
         namedType: Duration.v1.meta.apis.pkg.apimachinery.k8s.io
-    - name: configurationManagement
-      type:
-        scalar: string
     - name: connectTimeout
       type:
         namedType: Duration.v1.meta.apis.pkg.apimachinery.k8s.io
@@ -4416,9 +4413,6 @@ var schemaYAML = typed.YAMLObject(`types:
       type:
         namedType: com.github.openshift.api.operator.v1alpha1.ClusterAPIInstallerComponentImage
       default: {}
-    - name: name
-      type:
-        scalar: string
     - name: type
       type:
         scalar: string
@@ -4448,14 +4442,6 @@ var schemaYAML = typed.YAMLObject(`types:
     - name: contentID
       type:
         scalar: string
-    - name: manifestSubstitutions
-      type:
-        list:
-          elementType:
-            namedType: com.github.openshift.api.operator.v1alpha1.ClusterAPIInstallerRevisionManifestSubstitution
-          elementRelationship: associative
-          keys:
-          - key
     - name: name
       type:
         scalar: string
@@ -4469,15 +4455,6 @@ var schemaYAML = typed.YAMLObject(`types:
             scalar: string
           elementRelationship: atomic
     elementRelationship: atomic
-- name: com.github.openshift.api.operator.v1alpha1.ClusterAPIInstallerRevisionManifestSubstitution
-  map:
-    fields:
-    - name: key
-      type:
-        scalar: string
-    - name: value
-      type:
-        scalar: string
 - name: com.github.openshift.api.operator.v1alpha1.ClusterAPISpec
   map:
     fields:
@@ -4496,9 +4473,6 @@ var schemaYAML = typed.YAMLObject(`types:
     - name: desiredRevision
       type:
         scalar: string
-    - name: observedRevisionGeneration
-      type:
-        scalar: numeric
     - name: revisions
       type:
         list:
