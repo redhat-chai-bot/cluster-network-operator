@@ -458,6 +458,7 @@ enable-egress-firewall=true
 enable-egress-qos=true
 enable-egress-service=true
 egressip-node-healthcheck-port=9107
+egressip-reachability-total-timeout=3
 enable-multi-network=true
 enable-network-segmentation=true
 enable-preconfigured-udn-addresses=true
@@ -519,6 +520,7 @@ enable-egress-firewall=true
 enable-egress-qos=true
 enable-egress-service=true
 egressip-node-healthcheck-port=9107
+egressip-reachability-total-timeout=0
 enable-multi-network=true
 enable-network-segmentation=true
 enable-preconfigured-udn-addresses=true
@@ -4163,6 +4165,7 @@ func TestRenderOVNKubernetesReachability(t *testing.T) {
 			var configMap *uns.Unstructured
 			var scriptCP string
 			var scriptNode string
+			var ovnkubeConfigs []string
 			for _, obj := range objs {
 				// Gets script that starts ovnkube-control-plane pod, ovnkube-cluster-manager container
 				if obj.GetKind() == "Deployment" && obj.GetName() == "ovnkube-control-plane" && obj.GetNamespace() == "openshift-ovn-kubernetes" {
@@ -4190,9 +4193,20 @@ func TestRenderOVNKubernetesReachability(t *testing.T) {
 					g.Expect(found).To(BeTrue(), "ovnkube-script-lib ConfigMap should have data field")
 					scriptNode = configMapData["ovnkube-lib.sh"]
 				}
+
+				// Collect ovnkube-config ConfigMaps (node config and master config)
+				if obj.GetKind() == "ConfigMap" && obj.GetName() == "ovnkube-config" {
+					configMapData, found, err := uns.NestedStringMap(obj.Object, "data")
+					g.Expect(err).NotTo(HaveOccurred())
+					g.Expect(found).To(BeTrue(), "ovnkube-config ConfigMap should have data field")
+					if conf, ok := configMapData["ovnkube.conf"]; ok {
+						ovnkubeConfigs = append(ovnkubeConfigs, conf)
+					}
+				}
 			}
 			g.Expect(scriptCP).NotTo(BeEmpty())
 			g.Expect(scriptNode).NotTo(BeEmpty())
+			g.Expect(ovnkubeConfigs).NotTo(BeEmpty(), "should find at least one ovnkube-config ConfigMap")
 
 			if tc.expectKubernetesFeatureReachability {
 				g.Expect(scriptCP).To(
@@ -4203,6 +4217,12 @@ func TestRenderOVNKubernetesReachability(t *testing.T) {
 					ContainSubstring(fmt.Sprintf("--egressip-reachability-total-timeout %d", *tc.reachabilityTimeout)),
 					"ovnkube-node pod template should contain the configured reachability timeout value",
 				)
+				for i, conf := range ovnkubeConfigs {
+					g.Expect(conf).To(
+						ContainSubstring(fmt.Sprintf("egressip-reachability-total-timeout=%d", *tc.reachabilityTimeout)),
+						fmt.Sprintf("ovnkube-config ConfigMap %d should contain the configured reachability timeout value", i),
+					)
+				}
 
 			} else {
 				g.Expect(scriptCP).NotTo(
@@ -4213,6 +4233,12 @@ func TestRenderOVNKubernetesReachability(t *testing.T) {
 					ContainSubstring("--egressip-reachability-total-timeout"),
 					"ovnkube-node pod template should not contain the configured reachability timeout value",
 				)
+				for i, conf := range ovnkubeConfigs {
+					g.Expect(conf).NotTo(
+						ContainSubstring("egressip-reachability-total-timeout"),
+						fmt.Sprintf("ovnkube-config ConfigMap %d should not contain the reachability timeout value", i),
+					)
+				}
 			}
 		})
 	}

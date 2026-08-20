@@ -40,6 +40,9 @@ data:
 {{- if .ReachabilityNodePort }}
     egressip-node-healthcheck-port={{.ReachabilityNodePort}}
 {{- end }}
+{{- if .ReachabilityTotalTimeoutSeconds }}
+    egressip-reachability-total-timeout={{.ReachabilityTotalTimeoutSeconds}}
+{{- end }}
     enable-multi-network=true
     enable-network-segmentation=true
     enable-preconfigured-udn-addresses=true
@@ -69,10 +72,10 @@ data:
 {{- if .IsSNO }}
 
     [clustermgrha]
-    {{- /* 
-    Even in case of SNO there will be only one ovn-master, we set dedicated values for leader election 
-    durations in SNO, as disabling it can cause issues on scaling out SNO again. 
-    The whole discussion can be found at https://coreos.slack.com/archives/CDCP2LA9L/p1627402405090600. 
+    {{- /*
+    Even in case of SNO there will be only one ovn-master, we set dedicated values for leader election
+    durations in SNO, as disabling it can cause issues on scaling out SNO again.
+    The whole discussion can be found at https://coreos.slack.com/archives/CDCP2LA9L/p1627402405090600.
     Recommended values at https://github.com/openshift/enhancements/blame/84e894ead7b188a1013556e0ba6973b8463995f1/CONVENTIONS.md#L183
     */}}
     election-lease-duration=137
@@ -123,6 +126,9 @@ data:
     enable-egress-service=true
 {{- if .ReachabilityNodePort }}
     egressip-node-healthcheck-port={{.ReachabilityNodePort}}
+{{- end }}
+{{- if .ReachabilityTotalTimeoutSeconds }}
+    egressip-reachability-total-timeout={{.ReachabilityTotalTimeoutSeconds}}
 {{- end }}
     enable-multi-network=true
     enable-network-segmentation=true

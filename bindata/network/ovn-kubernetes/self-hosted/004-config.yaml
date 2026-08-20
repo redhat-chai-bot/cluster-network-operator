@@ -43,6 +43,9 @@ data:
 {{- if .ReachabilityNodePort }}
     egressip-node-healthcheck-port={{.ReachabilityNodePort}}
 {{- end }}
+{{- if .ReachabilityTotalTimeoutSeconds }}
+    egressip-reachability-total-timeout={{.ReachabilityTotalTimeoutSeconds}}
+{{- end }}
     enable-multi-network=true
     enable-network-segmentation=true
     enable-preconfigured-udn-addresses=true
